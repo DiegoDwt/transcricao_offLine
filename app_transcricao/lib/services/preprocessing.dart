@@ -27,7 +27,6 @@ class MelSpectrogram {
 /// - fMin / fMax: faixa de frequência para o banco Mel
 /// - eps: valor numérico pequeno para evitar log(0)
 /// - padTo: padding para múltiplos (NeMo espera padding em blocos de 16)
-/// - addDither: adiciona ruído muito pequeno para evitar problemas com sinais constantes
 MelSpectrogram computeLogMelSpectrogram(
   Float32List audio, {
   int sampleRate = 16000,
@@ -39,20 +38,10 @@ MelSpectrogram computeLogMelSpectrogram(
   double? fMax,
   double eps = 1e-10,
   int padTo = 16,
-  bool addDither = false,
 }) {
   // Se fMax não foi fornecido, usamos Nyquist (sr/2)
   fMax ??= sampleRate / 2.0;
   final fft = FFT(nFft);
-
-  // Dither é um ruído muito fraco adicionado ao sinal para reduzir distorções causadas por quantização
-  if (addDither) {
-    final rnd = Random();
-    for (int i = 0; i < audio.length; i++) {
-      // adiciona ruído uniforme muito pequeno (ordem 1e-5)
-      audio[i] += (rnd.nextDouble() * 2 - 1) * 1e-5;
-    }
-  }
 
   // --------------------
   // 1) Janela Hann
